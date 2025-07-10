@@ -34,8 +34,8 @@ fetch("Empfaenger-Upload-Links.xlsx")
     const rows = XLSX.utils.sheet_to_json(sheet);
 
     rows.forEach(row => {
-      if (row.Benutzername && row.UploadLink) {
-        uploadLinks[row.Benutzername.toLowerCase()] = row.UploadLink;
+      if (row.Email && row.Link) {
+        Link[row.Email.toLowerCase()] = row.Link;
       }
     });
 
