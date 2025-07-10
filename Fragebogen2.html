@@ -1,35 +1,4 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Fragebogen mit Uploadlink</title>
-  <style>
-    body { font-family: sans-serif; margin: 30px; max-width: 700px; }
-    #frage-container, #upload-section, #abschluss { margin-top: 30px; }
-    button { padding: 10px 20px; margin-top: 10px; }
-    #upload-section { background: #eef; padding: 15px; border-left: 4px solid #4CAF50; }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-</head>
-<body>
-
-<h2>Fragebogen mit Excel-Upload und Antwortprotokoll</h2>
-
-<p>1. Lade deine Excel-Datei hoch (mit <code>Benutzername</code> und <code>UploadLink</code>):</p>
-<input type="file" id="excelInput" accept=".xlsx" />
-<div id="excel-status" style="margin-top: 15px; color: green;"></div>
-<div id="user-check" style="color: red; margin-top: 15px;"></div>
-
-<div id="user-info"></div>
-<div id="frage-container" style="display:none;"></div>
-<div id="upload-section" style="display:none;"></div>
-<div id="abschluss" style="display:none;">
-  <h3>Fragebogen abgeschlossen</h3>
-  <p>Dein Antwortprotokoll wurde als Datei heruntergeladen.</p>
-  <p>Bitte lade diese Datei nun auf deine persönliche Uploadseite hoch:</p>
-  <p><a id="uploadLink" href="#" target="_blank">Upload-Link öffnen</a></p>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 let uploadLinks = {};
 let fragen = [
@@ -49,8 +18,6 @@ let user = null;
 let currentIndex = 0;
 let antworten = [];
 
-const excelInput = document.getElementById("excelInput");
-const excelStatus = document.getElementById("excel-status");
 const userCheck = document.getElementById("user-check");
 const userInfo = document.getElementById("user-info");
 const frageContainer = document.getElementById("frage-container");
@@ -58,29 +25,26 @@ const uploadSection = document.getElementById("upload-section");
 const abschluss = document.getElementById("abschluss");
 const uploadLinkDisplay = document.getElementById("uploadLink");
 
-excelInput.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const data = new Uint8Array(evt.target.result);
+// Excel automatisch aus GitHub laden
+fetch("upload.xlsx")
+  .then(res => res.arrayBuffer())
+  .then(data => {
     const workbook = XLSX.read(data, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet);
 
-    uploadLinks = {};
     rows.forEach(row => {
       if (row.Benutzername && row.UploadLink) {
         uploadLinks[row.Benutzername.toLowerCase()] = row.UploadLink;
       }
     });
 
-    excelStatus.innerHTML = `✅ ${Object.keys(uploadLinks).length} Benutzer geladen.`;
     prüfeUserUndStarte();
-  };
-  reader.readAsArrayBuffer(file);
-});
+  })
+  .catch(err => {
+    userCheck.innerHTML = "❗ Excel-Datei konnte nicht geladen werden.";
+    console.error("Excel-Fehler:", err);
+  });
 
 function prüfeUserUndStarte() {
   const params = new URLSearchParams(window.location.search);
@@ -160,6 +124,3 @@ function zeigeErgebnis() {
   document.body.removeChild(downloadLink);
 }
 </script>
-
-</body>
-</html>
