@@ -38,8 +38,9 @@ fetch("Empfaenger-Upload-Links.xlsx")
         uploadLinks[row.Email.toLowerCase()] = row.Link;
       }
     });
-
+    console.error("Prüfe und Starte");
     prüfeUserUndStarte();
+   
   })
   .catch(err => {
     userCheck.innerHTML = "❗ Excel-Datei konnte nicht geladen werden.";
