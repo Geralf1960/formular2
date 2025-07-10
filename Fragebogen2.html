@@ -26,7 +26,7 @@ const abschluss = document.getElementById("abschluss");
 const uploadLinkDisplay = document.getElementById("uploadLink");
 
 // Excel automatisch aus GitHub laden
-fetch("Empfaenger-Upload-Links.xlsx")
+fetch("Empfaenger-Upload-Links-2.xlsx")
   .then(res => res.arrayBuffer())
   .then(data => {
     const workbook = XLSX.read(data, { type: "array" });
@@ -34,8 +34,8 @@ fetch("Empfaenger-Upload-Links.xlsx")
     const rows = XLSX.utils.sheet_to_json(sheet);
     console.error("Excel fetched");
     rows.forEach(row => {
-      if (row.Email && row.Link) {
-        uploadLinks[row.Email.toLowerCase()] = row.Link;
+      if (row.Benutzername && row.UploadLink) {
+        uploadLinks[row.Benutzername.toLowerCase()] = row.UploadLink;
       }
     });
     
