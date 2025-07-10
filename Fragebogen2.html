@@ -38,7 +38,7 @@ fetch("Empfaenger-Upload-Links.xlsx")
         uploadLinks[row.Email.toLowerCase()] = row.Link;
       }
     });
-    console.error("Prüfe und Starte");
+    
     prüfeUserUndStarte();
    
   })
@@ -50,7 +50,7 @@ fetch("Empfaenger-Upload-Links.xlsx")
 function prüfeUserUndStarte() {
   const params = new URLSearchParams(window.location.search);
   user = params.get("user")?.toLowerCase();
-
+  console.error("Prüfe und Starte", user);
   if (!user) {
     userCheck.innerHTML = "❗ Bitte öffne die Seite mit <code>?user=NAME</code> in der URL.";
     return;
