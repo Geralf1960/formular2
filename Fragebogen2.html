@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Fragebogen mit Excel-Upload</title>
+  <title>Fragebogen mit Uploadlink</title>
   <style>
-    body { font-family: Arial; max-width: 700px; margin: 30px; }
+    body { font-family: sans-serif; margin: 30px; max-width: 700px; }
     #frage-container, #upload-section, #abschluss { margin-top: 30px; }
     button { padding: 10px 20px; margin-top: 10px; }
     #upload-section { background: #eef; padding: 15px; border-left: 4px solid #4CAF50; }
@@ -13,23 +13,25 @@
 </head>
 <body>
 
-<h2>Fragebogen – Schritt für Schritt mit Excel Upload</h2>
+<h2>Fragebogen mit Excel-Upload und Antwortprotokoll</h2>
 
-<!-- Excel-Datei hochladen -->
-<label>1. Lade die Excel-Datei mit den Upload-Links hoch:</label><br>
+<p>1. Lade deine Excel-Datei hoch (mit <code>Benutzername</code> und <code>UploadLink</code>):</p>
 <input type="file" id="excelInput" accept=".xlsx" />
-<div id="excel-status" style="margin-top:10px;"></div>
+<div id="excel-status" style="margin-top: 15px; color: green;"></div>
+<div id="user-check" style="color: red; margin-top: 15px;"></div>
 
-<!-- Fragebogen -->
 <div id="user-info"></div>
 <div id="frage-container" style="display:none;"></div>
 <div id="upload-section" style="display:none;"></div>
 <div id="abschluss" style="display:none;">
-  <h3>Vielen Dank! Der Fragebogen ist abgeschlossen.</h3>
+  <h3>Fragebogen abgeschlossen</h3>
+  <p>Dein Antwortprotokoll wurde als Datei heruntergeladen.</p>
+  <p>Bitte lade diese Datei nun auf deine persönliche Uploadseite hoch:</p>
+  <p><a id="uploadLink" href="#" target="_blank">Upload-Link öffnen</a></p>
 </div>
 
 <script>
-let uploadLinks = {}; // wird aus Excel geladen
+let uploadLinks = {};
 let fragen = [
   "1. Benötigen Sie technische Unterlagen?",
   "2. Möchten Sie Bildmaterial hochladen?",
@@ -42,17 +44,20 @@ let fragen = [
   "9. Möchten Sie Planungsdokumente übermitteln?",
   "10. Müssen Sie eine Projektbeschreibung hochladen?"
 ];
+
 let user = null;
 let currentIndex = 0;
+let antworten = [];
 
 const excelInput = document.getElementById("excelInput");
 const excelStatus = document.getElementById("excel-status");
+const userCheck = document.getElementById("user-check");
 const userInfo = document.getElementById("user-info");
 const frageContainer = document.getElementById("frage-container");
 const uploadSection = document.getElementById("upload-section");
 const abschluss = document.getElementById("abschluss");
+const uploadLinkDisplay = document.getElementById("uploadLink");
 
-// Excel-Datei laden
 excelInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -64,32 +69,39 @@ excelInput.addEventListener("change", (e) => {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet);
 
-    // Excel muss Spalten "Benutzername" und "UploadLink" haben
+    uploadLinks = {};
     rows.forEach(row => {
       if (row.Benutzername && row.UploadLink) {
         uploadLinks[row.Benutzername.toLowerCase()] = row.UploadLink;
       }
     });
 
-    excelStatus.innerHTML = `<p style="color:green;">${rows.length} Benutzer geladen.</p>`;
-
-    // Fragebogen starten
-    initialisiereFragebogen();
+    excelStatus.innerHTML = `✅ ${Object.keys(uploadLinks).length} Benutzer geladen.`;
+    prüfeUserUndStarte();
   };
   reader.readAsArrayBuffer(file);
 });
 
-function initialisiereFragebogen() {
+function prüfeUserUndStarte() {
   const params = new URLSearchParams(window.location.search);
   user = params.get("user")?.toLowerCase();
 
-  if (!user || !uploadLinks[user]) {
-    userInfo.innerHTML = `<p style="color:red;">Ungültiger oder fehlender Benutzer. Rufe die Seite mit <code>?user=max</code> auf.</p>`;
+  if (!user) {
+    userCheck.innerHTML = "❗ Bitte öffne die Seite mit <code>?user=NAME</code> in der URL.";
     return;
   }
 
-  userInfo.innerHTML = `<p>Hallo <strong>${user}</strong>, bitte beantworte die folgenden Fragen einzeln.</p>`;
+  if (!uploadLinks[user]) {
+    userCheck.innerHTML = `❗ Benutzer <strong>${user}</strong> wurde nicht in der Excel-Datei gefunden.`;
+    return;
+  }
+
+  userCheck.innerHTML = "";
+  userInfo.innerHTML = `<p>Hallo <strong>${user}</strong>, bitte beantworte die folgenden Fragen nacheinander.</p>`;
   frageContainer.style.display = "block";
+  uploadLinkDisplay.href = uploadLinks[user];
+  currentIndex = 0;
+  antworten = [];
   zeigeFrage();
 }
 
@@ -97,24 +109,25 @@ function zeigeFrage() {
   if (currentIndex >= fragen.length) {
     frageContainer.style.display = "none";
     uploadSection.style.display = "none";
-    abschluss.style.display = "block";
+    zeigeErgebnis();
     return;
   }
 
   const frage = fragen[currentIndex];
   frageContainer.innerHTML = `
     <p>${frage}</p>
-    <button onclick="antwort('ja')">Ja</button>
-    <button onclick="antwort('nein')">Nein</button>
+    <button onclick="antwort('Ja')">Ja</button>
+    <button onclick="antwort('Nein')">Nein</button>
   `;
   uploadSection.style.display = "none";
 }
 
 function antwort(wert) {
-  if (wert === "ja") {
+  antworten.push(`Frage ${currentIndex + 1}: ${wert}`);
+  if (wert === "Ja") {
     const link = uploadLinks[user];
     uploadSection.innerHTML = `
-      <p>Bitte laden Sie Ihre Datei hoch:</p>
+      <p>Bitte lade deine Datei hier hoch:</p>
       <a href="${link}" target="_blank">${link}</a><br><br>
       <button onclick="naechsteFrage()">Fertig hochgeladen</button>
     `;
@@ -129,7 +142,22 @@ function antwort(wert) {
 function naechsteFrage() {
   currentIndex++;
   frageContainer.style.display = "block";
+  uploadSection.style.display = "none";
   zeigeFrage();
+}
+
+function zeigeErgebnis() {
+  abschluss.style.display = "block";
+  const protokoll = [`Benutzer: ${user}`, ...antworten].join("\n");
+  const blob = new Blob([protokoll], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = `antworten_${user}.txt`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
 }
 </script>
 
