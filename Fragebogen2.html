@@ -32,7 +32,7 @@ fetch("Empfaenger-Upload-Links-2.xlsx")
     const workbook = XLSX.read(data, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet);
-    console.error("Excel fetched");
+    
     rows.forEach(row => {
       if (row.Benutzername && row.UploadLink) {
         uploadLinks[row.Benutzername.toLowerCase()] = row.UploadLink;
@@ -50,7 +50,7 @@ fetch("Empfaenger-Upload-Links-2.xlsx")
 function prüfeUserUndStarte() {
   const params = new URLSearchParams(window.location.search);
   user = params.get("user")?.toLowerCase();
-  console.error("Prüfe und Starte", user);
+  
   if (!user) {
     userCheck.innerHTML = "❗ Bitte öffne die Seite mit <code>?user=NAME</code> in der URL.";
     return;
