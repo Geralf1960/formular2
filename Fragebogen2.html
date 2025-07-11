@@ -24,8 +24,8 @@
 <div id="upload-section" style="display:none;"></div>
 <div id="abschluss" style="display:none;">
   <h3>Fragebogen abgeschlossen</h3>
-  <p>Dein Antwortprotokoll wurde als Datei heruntergeladen.</p>
-  <p>Bitte lade diese Datei nun auf deine persönliche Uploadseite hoch:</p>
+  <p>Ihr Antwortprotokoll wurde als Datei heruntergeladen.</p>
+  <p>Bitte laden Sie diese Datei nun auf Ihre persönliche Uploadseite hoch:</p>
   <p><a id="uploadLink" href="#" target="_blank">Upload-Link öffnen</a></p>
 </div>
 
@@ -83,7 +83,7 @@ function prüfeUserUndStarte() {
   user = params.get("user")?.toLowerCase();
   
   if (!user) {
-    userCheck.innerHTML = "❗ Bitte öffne die Seite mit <code>?user=NAME</code> in der URL.";
+    userCheck.innerHTML = "❗ Bitte öffnen Sie die Seite mit <code>?user=NAME</code> in der URL.";
     return;
   }
 
@@ -93,7 +93,7 @@ function prüfeUserUndStarte() {
   }
 
   userCheck.innerHTML = "";
-  userInfo.innerHTML = `<p>Hallo <strong>${user}</strong>, bitte beantworte die folgenden Fragen nacheinander.</p>`;
+  userInfo.innerHTML = `<p>Hallo <strong>${user}</strong>, bitte beantworten Sie die folgenden Fragen nacheinander.</p>`;
   frageContainer.style.display = "block";
   uploadLinkDisplay.href = uploadLinks[user];
   currentIndex = 0;
@@ -123,7 +123,7 @@ function antwort(wert) {
   if (wert === "Ja") {
     const link = uploadLinks[user];
     uploadSection.innerHTML = `
-      <p>Bitte lade deine Datei hier hoch:</p>
+      <p>Bitte laden Sie Ihre Datei(en) hier hoch:</p>
       <a href="${link}" target="_blank">${link}</a><br><br>
       <button onclick="naechsteFrage()">Fertig hochgeladen</button>
     `;
